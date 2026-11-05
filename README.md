@@ -12,6 +12,10 @@ The notebook contains **10,000 applications** across **January–June 2025**, in
 | Score ≥ 700 | 395 | 3.95% | 59 | 14.94% | 29.21% | 3.43% |
 | Score ≥ 600 | 997 | 9.97% | 108 | 10.83% | 53.47% | 9.07% |
 
+### Fraud Threshold Comparison
+
+![Fraud Threshold Comparison](images/bar_graph_image.jpg)
+
 **All counts above cover the full six-month dataset, not one month.** Results are taken from the notebook’s saved cumulative performance table, rounded here to two decimal places. Cutoffs are inclusive because the score bins use `right=False` and cumulative totals run from the highest bin downward.
 
 At a cutoff of 700, the review queue contains 59 labeled fraud cases and 336 non-fraud cases. Precision is about **7.39 times** the overall fraud rate (14.94% versus 2.02%). This is retrospective identification opportunity; it does not establish that those cases or their losses would have been prevented.
