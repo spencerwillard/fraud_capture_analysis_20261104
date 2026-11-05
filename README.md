@@ -1,101 +1,114 @@
 # Fraud Capture Opportunity Analysis
 
-Evaluate how fraud score cutoffs change manual review volume, precision, and the share of labeled fraud identified. This Python mini-project uses pandas to validate application data, build a score performance table, and compare review strategies with Matplotlib.
+## Project Overview
 
-## Key results
+This project evaluates how adjusting fraud score thresholds affects fraud identification, manual review volume, and operational efficiency.
 
-The notebook contains **10,000 applications** across **January–June 2025**, including **202 labeled fraudulent applications**: a **2.02% baseline fraud rate**.
+Using Python and Pandas, I analyzed **10,000 applications from January through June 2025** to compare three fraud score cutoffs: 800, 700, and 600.
 
-| Review rule | Applications flagged | Flag rate | Labeled fraud flagged | Precision | Fraud recall | False positive rate |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Score ≥ 800 | 93 | 0.93% | 18 | 19.35% | 8.91% | 0.77% |
-| Score ≥ 700 | 395 | 3.95% | 59 | 14.94% | 29.21% | 3.43% |
-| Score ≥ 600 | 997 | 9.97% | 108 | 10.83% | 53.47% | 9.07% |
+The objective was to identify a review strategy that balances increased fraud detection with the operational costs of reviewing legitimate applications.
+
+**Tools:** Python, Pandas, NumPy, Matplotlib, Jupyter Notebook
+
+## Key Findings
+
+The dataset contained **202 labeled fraudulent applications**, representing a baseline fraud rate of **2.02%**.
+
+| Fraud Score Cutoff | Applications Flagged | Flag Rate | Fraud Flagged | Precision | Fraud Recall | False Positive Rate |
+|---|---:|---:|---:|---:|---:|---:|
+| 800 | 93 | 0.93% | 18 | 19.35% | 8.91% | 0.77% |
+| 700 | 395 | 3.95% | 59 | 14.94% | 29.21% | 3.43% |
+| 600 | 997 | 9.97% | 108 | 10.83% | 53.47% | 9.07% |
+
+*All application counts represent the full six-month analysis period.*
 
 ### Fraud Threshold Comparison
 
 ![Fraud Threshold Comparison](images/bar_graph_image.jpg)
 
-**All counts above cover the full six-month dataset, not one month.** Results are taken from the notebook’s saved cumulative performance table, rounded here to two decimal places. Cutoffs are inclusive because the score bins use `right=False` and cumulative totals run from the highest bin downward.
+The analysis highlights several important trade-offs:
 
-At a cutoff of 700, the review queue contains 59 labeled fraud cases and 336 non-fraud cases. Precision is about **7.39 times** the overall fraud rate (14.94% versus 2.02%). This is retrospective identification opportunity; it does not establish that those cases or their losses would have been prevented.
+- **Higher thresholds improve precision:** A cutoff of 800 achieves the highest precision (19.35%) but identifies only 8.91% of labeled fraud.
+- **Lower thresholds increase fraud recall:** Reducing the cutoff to 600 identifies 53.47% of labeled fraud while flagging approximately 10% of all applications.
+- **Increased fraud identification comes with additional reviews:** Moving from 700 to 600 adds 602 reviews, including 49 additional labeled fraudulent applications.
+- **Targeted reviews outperform random selection:** At a cutoff of 700, precision reaches 14.94%, approximately 7.4 times the baseline fraud rate of 2.02%.
 
-## Decision implications
+## Business Recommendation
 
-A cutoff of **700 is a candidate for evaluation**, with higher precision and fewer reviews than 600, while identifying more labeled fraud than 800. Lowering the cutoff from 700 to 600 adds **602 reviews** and identifies **49 additional labeled fraud cases** across the observed period.
+**A fraud score cutoff of 600 warrants further evaluation as a potential manual review strategy.**
 
-The notebook’s original recommendation describes 395 and 997 as monthly review counts. Those are six-month totals, so the claim that a 600 cutoff exceeds a capacity of 500 reviews per month is unsupported. The notebook does not show how those 997 flags are distributed by month. At 700, even all 395 flags in one month would remain below that capacity. Before selecting a cutoff, calculate flagged applications by month for each rule and evaluate review costs, customer friction, and the value of additional fraud detection. If prioritizing the greatest fraud recall under capacity, also evaluate the other available thresholds rather than limiting the decision to 600, 700, and 800.
+This threshold identifies 108 of the 202 labeled fraudulent applications while flagging 997 applications across the six-month period.
 
-## Data
+Compared with a cutoff of 700, it offers substantially greater fraud recall but also increases the number of legitimate applications requiring review.
 
-The notebook reads `../data/fraud_capture_mini_project.csv` relative to its `notebooks/` directory.
+Assuming a monthly manual review capacity of 500 applications, the 997 flagged applications average approximately 166 reviews per month. However, actual monthly volumes must be evaluated to confirm that capacity would not be exceeded during peak periods.
 
-| Field | Purpose |
-| --- | --- |
-| `application_id` | Application identifier |
-| `application_date` | Application date, parsed with `%m/%d/%y` |
-| `fraud_score` | Score used to prioritize review |
-| `fraud_label` | Observed binary label: 1 = fraud, 0 = non-fraud |
-| `application_amount` | Application amount; not used to estimate financial savings |
+Before implementing a new cutoff, I would recommend:
 
-Saved data checks show no missing values, unique application IDs, no exact duplicate rows, and fraud scores from 4 to 965. Labels contain 9,798 non-fraud cases and 202 fraud cases. Observed application amounts range from 300 to 45,000; repeated amounts alone are not duplicate applications.
+1. Validating monthly review volumes against operational capacity.
+2. Evaluating manual review costs and customer friction from false positives.
+3. Estimating the financial value of additional fraud identification.
+4. Comparing additional score thresholds to identify the most effective operational strategy.
 
-## Analysis workflow
+**The objective is not simply to maximize fraud recall, but to identify the threshold that delivers the greatest business value within operational constraints.**
 
-1. Load and inspect the input data.
-2. Check missing values, uniqueness, duplicates, score bounds, labels, and amounts.
-3. Copy the data, parse dates, and create an `is_fraud` indicator.
-4. Summarize monthly application counts, fraud counts, and fraud rates.
-5. Assign 50-point score bins from `[0, 50)` through `[950, 1000)`.
-6. Aggregate applications and fraud by bin; accumulate from the highest scores downward.
-7. Calculate review flag rate, precision, recall, and false positive rate.
-8. Compare cutoffs of 800, 700, and 600 in a table and grouped bar chart. The chart uses **steelblue** for application flag rate and **seagreen** for fraud recall.
+## Analysis Methodology
 
-## Metric definitions
+The analysis followed five primary steps:
 
-- **Flag rate:** flagged applications ÷ all applications.
-- **Precision:** flagged labeled fraud ÷ flagged applications.
-- **Fraud recall:** flagged labeled fraud ÷ all labeled fraud.
-- **False positive rate:** flagged non-fraud applications ÷ all non-fraud applications.
+1. **Data validation:** Inspected missing values, duplicate records, data types, fraud labels, and score distributions.
+2. **Data preparation:** Converted application dates to datetime values and created a Boolean fraud indicator.
+3. **Exploratory analysis:** Evaluated application volume, baseline fraud rates, and fraud distribution across score ranges.
+4. **Threshold analysis:** Grouped scores into 50-point intervals and calculated cumulative review volume, precision, recall, and false positive rates.
+5. **Strategy comparison:** Compared three potential manual review thresholds and visualized their operational trade-offs.
 
-Notebook performance-table percentages are stored on a 0–100 scale. Baseline and monthly fraud rates are stored as fractions on a 0–1 scale. Format them accordingly when displaying results.
-
-## Run locally
-
-Use this layout:
+## Project Structure
 
 ```text
-fraud-capture-opportunity/
-├── README.md
+fraud_capture_20261029/
 ├── data/
 │   └── fraud_capture_mini_project.csv
-└── notebooks/
-    └── fraud_capture_analysis.ipynb
+├── images/
+│   └── bar_graph_image.jpg
+├── notebooks/
+│   └── fraud_capture_analysis.ipynb
+├── pyproject.toml
+├── uv.lock
+└── README.md
 ```
 
-Install Python 3 and the required packages:
+## Running the Analysis
+
+Clone the repository:
 
 ```bash
-python3 -m pip install pandas numpy matplotlib jupyterlab
+git clone https://github.com/spencerwillard/fraud_capture_analysis_20261104.git
+cd fraud_capture_analysis_20261104
 ```
 
-Start JupyterLab, open the notebook, and run all cells in order with the working directory set to `notebooks/`:
+Install the project dependencies using [uv](https://docs.astral.sh/uv/):
 
 ```bash
-cd notebooks
-python3 -m jupyterlab
+uv sync
 ```
 
-No package versions are pinned in the supplied notebook. For more predictable categorical grouping across pandas versions, explicitly set `observed=False` in the score-bin aggregation to retain all defined bins.
+Open `notebooks/fraud_capture_analysis.ipynb` in VS Code or Jupyter, select the project's Python environment, and run the cells in order.
 
-## Limitations and next steps
+The notebook uses a relative path to access the CSV in the `data/` directory.
 
-- Findings describe the observed January–June 2025 sample; future application volumes and fraud patterns may differ.
-- The notebook analyzes an existing score. It does not train a model or validate performance on a separate holdout period.
-- Review success, intervention timing, and prevented losses are not measured. Application amounts are not equivalent to fraud losses.
-- Monthly threshold review counts and review economics are needed to substantiate an operational cutoff recommendation.
-- Sparse high-score bins can produce unstable precision estimates; for example, the highest bin contains one application.
+## Limitations
 
-## Evidence and reproducibility
+This analysis uses historical application data and observed fraud labels. Several considerations are important when interpreting the results:
 
-This README was prepared from the actual code and saved outputs of `fraud_capture_analysis.ipynb`. The input CSV was not provided with the referenced notebook attachment, so the analysis was not rerun against its source data. The accompanying cleanup notes identify redundant cells and the corrections needed before presenting the notebook as a final analysis.
+- **Fraud identified does not equal fraud prevented.** The analysis does not measure intervention effectiveness or actual prevented losses.
+- **False positives create operational costs.** Legitimate applications flagged for review may increase workload and customer friction.
+- **Review capacity requires monthly validation.** Six-month totals and monthly averages do not establish peak monthly workload.
+- **Results may change over time.** Fraud patterns, application volumes, and model performance may differ in future periods.
+
+## Conclusion
+
+This project demonstrates how Python and Pandas can be used to translate fraud model scores into actionable business insights.
+
+By evaluating precision, recall, false positives, and manual review capacity together, the analysis illustrates why fraud strategy decisions require balancing detection performance with operational efficiency.
+
+The findings provide a foundation for evaluating fraud score thresholds and developing a more comprehensive, cost-based decision strategy.
